@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  # schedule: # runs pipeline every 15 minutes
+  #   - cron:  '15 * * * *'       
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cicd-${{ github.head_ref }}
+  # cancel-in-progress: true
+
+env:
+  APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+  GITHUB_EVENT: ${{ github.event_name }}
+  APPLITOOLS_SERVER_URL : "https://eyesapi.applitools.com"
+  APPLITOOLS_BATCH_ID: ${{ github.event.pull_request.head.sha || github.sha }}
+  APPLITOOLS_BRANCH: ${{ github.repository }}/${{ github.head_ref || github.ref_name}}
+  REPOSITORY: ${{ github.repository }}
+  ACTION_REF: ${{ github.action_ref }}
+  BASE_REF: ${{ github.base_ref }}
+  HEAD_REF: ${{ github.head_ref }}
+  REF: ${{ github.ref }}
+  REF_NAME: ${{ github.ref_name }}
+  RUN_ID: ${{ github.run_id }}
+  SHA: ${{ github.sha }}
+  HEAD.SHA: ${{ github.event.pull_request.head.sha }}
+  EVENT_NAME: ${{ github.event_name }}
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x]
+        
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+        
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      
+      - name: Log Git SHA
+        run: echo "$GITHUB_SHA" \
+          echo $APPLITOOLS_BATCH_ID \
+          echo ${{ github.repository }} \
+          echo ${{ github.ref_name }} \
+          echo ${{ github.event_name}} \
+
+
+      - name: Notify Applitools
+        if: github.event_name != 'pull_request'
+        uses: wei/curl@v1
+        with:
+         args: -L -d -v '' -X POST "${{env.APPLITOOLS_SERVER_URL}}/api/Externals/github/push?apiKey=$${{secrets.APPLITOOLS_API_KEY}}&CommitSha=${{ env.APPLITOOLS_BATCH_ID }}&BranchName=${{ env.APPLITOOLS_BRANCH }}"
+
+
+      - name: Install
+        run: npm ci
+
+      - name: Tests
+        run: |
+          npx eyes-storybook
