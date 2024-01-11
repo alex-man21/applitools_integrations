@@ -3,7 +3,7 @@ This repo contains the different yml files and configs neccessary for all Applit
 
 ## Current list of integrations
 GitActions
-- 
+- https://github.com/alex-man21/gitactions_storybook
 
 BitBucket
 - 
