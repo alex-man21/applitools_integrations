@@ -10,5 +10,9 @@ module.exports = {
         { deviceName: 'iPhone X',   screenOrientatin: 'portrait'    },
         { deviceName: 'iPad',       screenOrientation: 'landscape'  },
         { deviceName: 'Pixel 2',    screenOrientation: 'landscape'  }
-    ]
+    ],
+    puppeteerOptions: {
+        args: 
+            ['--no-sandbox'] // this is needed for Gitlab / Docker
+    }
 }
