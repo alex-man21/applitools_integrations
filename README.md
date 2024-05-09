@@ -20,7 +20,7 @@ GitLab
         - requires `--no-sandbox` puppeteer option
 
 AzureDevOps
-- 
+- https://dev.azure.com/alexman0840/azure-applitools-integration
 
 Jenkins
 - 
